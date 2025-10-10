@@ -1,4 +1,4 @@
-import exampleIconUrl from "./pngtree-cartoon-cookies-png-image_6516299.png";
+import exampleIconUrl from "./images.png";
 import "./style.css";
 
 document.body.style.display = "flex";
@@ -11,7 +11,7 @@ document.body.style.fontFamily = "sans-serif";
 document.body.style.backgroundColor = "#fef9f2";
 
 document.body.innerHTML = `
-  <p><img src="${exampleIconUrl}" class="icon" id="cookie" /></p>
+  <img src="${exampleIconUrl}" class="icon" id="cookie" />
 `;
 
 let cookies: number = 0;
@@ -23,7 +23,7 @@ counterDiv.style.marginBottom = "20px";
 counterDiv.style.color = "#5a3e1b";
 
 function cookieLabel(n: number): string {
-  return n === 1 ? "cookie" : "cookies";
+  return n === 1 ? "car" : "cars";
 }
 
 function renderCounter(): void {
@@ -44,7 +44,6 @@ cookieImg.style.border = "none";
 cookieImg.style.outline = "none";
 cookieImg.style.display = "block";
 
-
 cookieImg.addEventListener("click", () => {
   cookies += 1;
   renderCounter();
@@ -54,3 +53,8 @@ cookieImg.addEventListener("click", () => {
     cookieImg.style.transform = "";
   }, 100);
 });
+
+const _intervalId = setInterval(() => {
+  cookies += 1;
+  renderCounter();
+}, 1000);
