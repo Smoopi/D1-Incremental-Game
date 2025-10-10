@@ -1,4 +1,4 @@
-import exampleIconUrl from "./images.png";
+import exampleIconUrl from "./77-779651_bunch-of-cars-png-transparent-png.png";
 import "./style.css";
 
 document.body.style.display = "flex";
