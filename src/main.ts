@@ -15,20 +15,32 @@ document.body.innerHTML = `
 `;
 
 let horsepower: number = 0;
-let growthPerSecond: number = 0;
 
-let costA: number = 10;
-let costB: number = 100;
-let costC: number = 1000;
-
-const RATE_A = 0.1;
-const RATE_B = 2.0;
-const RATE_C = 50.0;
 const PRICE_MULTIPLIER = 1.15;
 
-let upgradesOwnedA = 0;
-let upgradesOwnedB = 0;
-let upgradesOwnedC = 0;
+interface Item {
+  name: string;
+  cost: number;
+  rate: number;
+  owned: number;
+  button?: HTMLButtonElement;
+}
+
+const availableItems: Item[] = [
+  { name: "Pit Crew", cost: 10, rate: 0.1, owned: 0 },
+  { name: "Mechanics", cost: 100, rate: 2.0, owned: 0 },
+  { name: "Race Engineers", cost: 1000, rate: 50.0, owned: 0 },
+];
+
+function formatHP(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
+function formatRate(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
+function formatCost(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(2);
+}
 
 const counterDiv = document.createElement("div");
 counterDiv.id = "counter";
@@ -36,26 +48,8 @@ counterDiv.style.fontSize = "2rem";
 counterDiv.style.marginBottom = "20px";
 counterDiv.style.color = "#1f2d3d";
 
-function hpLabel(n: number): string {
-  return n === 1 ? "Horsepower" : "Horsepower";
-}
-
-function formatHP(n: number): string {
-  return Number.isInteger(n) ? String(n) : n.toFixed(1);
-}
-
-function formatRate(n: number): string {
-  return Number.isInteger(n) ? String(n) : n.toFixed(1);
-}
-
-function formatCost(n: number): string {
-  return Number.isInteger(n) ? String(n) : n.toFixed(2);
-}
-
 function renderCounter(): void {
-  counterDiv.textContent = `${formatHP(horsepower)} ${
-    hpLabel(Math.round(horsepower))
-  }`;
+  counterDiv.textContent = `${formatHP(horsepower)} Horsepower`;
 }
 
 document.body.prepend(counterDiv);
@@ -75,130 +69,58 @@ engineImg.style.display = "block";
 engineImg.addEventListener("click", () => {
   horsepower += 1;
   renderCounter();
-  updatePurchaseButtonA();
-  updatePurchaseButtonB();
-  updatePurchaseButtonC();
+  renderAllButtons();
   renderStatus();
 
   engineImg.style.transform = "scale(0.9)";
-  setTimeout(() => {
-    engineImg.style.transform = "";
-  }, 100);
+  setTimeout(() => (engineImg.style.transform = ""), 100);
 });
 
-const purchaseBtn = document.createElement("button");
-purchaseBtn.id = "upgrade-btn";
-purchaseBtn.style.marginTop = "24px";
-purchaseBtn.style.padding = "10px 16px";
-purchaseBtn.style.fontSize = "1rem";
-purchaseBtn.style.borderRadius = "8px";
-purchaseBtn.style.border = "1px solid #9aa5b1";
-purchaseBtn.style.background = "#e6edf5";
-purchaseBtn.style.cursor = "pointer";
-purchaseBtn.disabled = true;
-
-const purchaseBtnB = document.createElement("button");
-purchaseBtnB.id = "upgrade-btn-b";
-purchaseBtnB.style.marginTop = "12px";
-purchaseBtnB.style.padding = "10px 16px";
-purchaseBtnB.style.fontSize = "1rem";
-purchaseBtnB.style.borderRadius = "8px";
-purchaseBtnB.style.border = "1px solid #9aa5b1";
-purchaseBtnB.style.background = "#e6edf5";
-purchaseBtnB.style.cursor = "pointer";
-purchaseBtnB.disabled = true;
-
-const purchaseBtnC = document.createElement("button");
-purchaseBtnC.id = "upgrade-btn-c";
-purchaseBtnC.style.marginTop = "12px";
-purchaseBtnC.style.padding = "10px 16px";
-purchaseBtnC.style.fontSize = "1rem";
-purchaseBtnC.style.borderRadius = "8px";
-purchaseBtnC.style.border = "1px solid #9aa5b1";
-purchaseBtnC.style.background = "#e6edf5";
-purchaseBtnC.style.cursor = "pointer";
-purchaseBtnC.disabled = true;
-
-function renderPurchaseLabel(): void {
-  purchaseBtn.textContent = `Hire Pit Crew (+${
-    formatRate(RATE_A)
-  } hp/sec) — Cost: ${formatCost(costA)} hp — Owned: ${upgradesOwnedA}`;
+function makeButton(): HTMLButtonElement {
+  const btn = document.createElement("button");
+  btn.style.marginTop = "12px";
+  btn.style.padding = "10px 16px";
+  btn.style.fontSize = "1rem";
+  btn.style.borderRadius = "8px";
+  btn.style.border = "1px solid #9aa5b1";
+  btn.style.background = "#e6edf5";
+  btn.style.cursor = "pointer";
+  btn.disabled = true;
+  return btn;
 }
 
-function updatePurchaseButtonA(): void {
-  purchaseBtn.disabled = horsepower < costA;
-  purchaseBtn.style.opacity = purchaseBtn.disabled ? "0.6" : "1";
+for (let i = 0; i < availableItems.length; i++) {
+  const item = availableItems[i];
+  const btn = makeButton();
+  if (i === 0) btn.style.marginTop = "24px";
+  item.button = btn;
+  document.body.appendChild(btn);
+
+  btn.addEventListener("click", () => {
+    if (horsepower < item.cost) return;
+    horsepower -= item.cost;
+    item.owned += 1;
+    item.cost *= PRICE_MULTIPLIER;
+
+    renderCounter();
+    renderAllButtons();
+    renderStatus();
+  });
 }
 
-function renderPurchaseLabelB(): void {
-  purchaseBtnB.textContent = `Add Mechanics (+${
-    formatRate(RATE_B)
-  } hp/sec) — Cost: ${formatCost(costB)} hp — Owned: ${upgradesOwnedB}`;
+function renderButton(item: Item): void {
+  if (!item.button) return;
+  item.button.textContent = `Hire ${item.name} (+${
+    formatRate(item.rate)
+  } hp/sec) — Cost: ${formatCost(item.cost)} hp — Owned: ${item.owned}`;
+  const canAfford = horsepower >= item.cost;
+  item.button.disabled = !canAfford;
+  item.button.style.opacity = canAfford ? "1" : "0.6";
 }
 
-function updatePurchaseButtonB(): void {
-  purchaseBtnB.disabled = horsepower < costB;
-  purchaseBtnB.style.opacity = purchaseBtnB.disabled ? "0.6" : "1";
+function renderAllButtons(): void {
+  for (const item of availableItems) renderButton(item);
 }
-
-function renderPurchaseLabelC(): void {
-  purchaseBtnC.textContent = `Hire Race Engineers (+${
-    formatRate(RATE_C)
-  } hp/sec) — Cost: ${formatCost(costC)} hp — Owned: ${upgradesOwnedC}`;
-}
-
-function updatePurchaseButtonC(): void {
-  purchaseBtnC.disabled = horsepower < costC;
-  purchaseBtnC.style.opacity = purchaseBtnC.disabled ? "0.6" : "1";
-}
-
-renderPurchaseLabel();
-updatePurchaseButtonA();
-document.body.appendChild(purchaseBtn);
-
-renderPurchaseLabelB();
-updatePurchaseButtonB();
-document.body.appendChild(purchaseBtnB);
-
-renderPurchaseLabelC();
-updatePurchaseButtonC();
-document.body.appendChild(purchaseBtnC);
-
-purchaseBtn.addEventListener("click", () => {
-  if (horsepower < costA) return;
-  horsepower -= costA;
-  upgradesOwnedA += 1;
-  growthPerSecond += RATE_A;
-  costA *= PRICE_MULTIPLIER;
-  renderCounter();
-  renderPurchaseLabel();
-  updatePurchaseButtonA();
-  renderStatus();
-});
-
-purchaseBtnB.addEventListener("click", () => {
-  if (horsepower < costB) return;
-  horsepower -= costB;
-  upgradesOwnedB += 1;
-  growthPerSecond += RATE_B;
-  costB *= PRICE_MULTIPLIER;
-  renderCounter();
-  renderPurchaseLabelB();
-  updatePurchaseButtonB();
-  renderStatus();
-});
-
-purchaseBtnC.addEventListener("click", () => {
-  if (horsepower < costC) return;
-  horsepower -= costC;
-  upgradesOwnedC += 1;
-  growthPerSecond += RATE_C;
-  costC *= PRICE_MULTIPLIER;
-  renderCounter();
-  renderPurchaseLabelC();
-  updatePurchaseButtonC();
-  renderStatus();
-});
 
 const statusDiv = document.createElement("div");
 statusDiv.id = "status";
@@ -217,12 +139,21 @@ const ownedDiv = document.createElement("div");
 ownedDiv.id = "owned";
 statusDiv.appendChild(ownedDiv);
 
-function renderStatus(): void {
-  growthDiv.textContent = `Output: ${formatRate(growthPerSecond)} hp/sec`;
-  ownedDiv.textContent =
-    `Owned — Pit Crew: ${upgradesOwnedA}, Mechanics: ${upgradesOwnedB}, Race Engineers: ${upgradesOwnedC}`;
+function totalGrowthPerSecond(): number {
+  return availableItems.reduce((sum, it) => sum + it.rate * it.owned, 0);
 }
 
+function renderStatus(): void {
+  const gps = totalGrowthPerSecond();
+  growthDiv.textContent = `Output: ${formatRate(gps)} hp/sec`;
+
+  const ownedStr = availableItems
+    .map((it) => `${it.name}: ${it.owned}`)
+    .join(", ");
+  ownedDiv.textContent = `Owned — ${ownedStr}`;
+}
+
+renderAllButtons();
 renderStatus();
 
 let lastTime: number | null = null;
@@ -233,14 +164,13 @@ function loop(now: number) {
   } else {
     const deltaSec = (now - lastTime) / 1000;
 
-    if (growthPerSecond > 0) {
-      horsepower += growthPerSecond * deltaSec;
+    const gps = totalGrowthPerSecond();
+    if (gps > 0) {
+      horsepower += gps * deltaSec;
     }
 
     renderCounter();
-    updatePurchaseButtonA();
-    updatePurchaseButtonB();
-    updatePurchaseButtonC();
+    renderAllButtons();
     renderStatus();
 
     lastTime = now;
