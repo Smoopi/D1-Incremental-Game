@@ -20,6 +20,7 @@ const PRICE_MULTIPLIER = 1.15;
 
 interface Item {
   name: string;
+  description: string;
   cost: number;
   rate: number;
   owned: number;
@@ -27,9 +28,41 @@ interface Item {
 }
 
 const availableItems: Item[] = [
-  { name: "Pit Crew", cost: 10, rate: 0.1, owned: 0 },
-  { name: "Mechanics", cost: 100, rate: 2.0, owned: 0 },
-  { name: "Race Engineers", cost: 1000, rate: 50.0, owned: 0 },
+  {
+    name: "Pit Crew",
+    description: "Quicker tire swaps and refuels — find free hp in the pits.",
+    cost: 10,
+    rate: 0.1,
+    owned: 0,
+  },
+  {
+    name: "Mechanics",
+    description: "Keep engines tuned and leaks sealed. Reliability = speed.",
+    cost: 100,
+    rate: 2.0,
+    owned: 0,
+  },
+  {
+    name: "Race Engineers",
+    description: "Telemetry + strategy = faster laps without more fuel.",
+    cost: 1000,
+    rate: 50.0,
+    owned: 0,
+  },
+  {
+    name: "Aero Package",
+    description: "Carbon fiber wings & undertray tweaks to cut drag.",
+    cost: 500,
+    rate: 10.0,
+    owned: 0,
+  },
+  {
+    name: "Wind Tunnel",
+    description: "Rent tunnel hours to chase perfect downforce balance.",
+    cost: 5000,
+    rate: 120.0,
+    owned: 0,
+  },
 ];
 
 function formatHP(n: number): string {
@@ -94,6 +127,7 @@ for (let i = 0; i < availableItems.length; i++) {
   const btn = makeButton();
   if (i === 0) btn.style.marginTop = "24px";
   item.button = btn;
+  btn.title = item.description;
   document.body.appendChild(btn);
 
   btn.addEventListener("click", () => {
@@ -147,9 +181,9 @@ function renderStatus(): void {
   const gps = totalGrowthPerSecond();
   growthDiv.textContent = `Output: ${formatRate(gps)} hp/sec`;
 
-  const ownedStr = availableItems
-    .map((it) => `${it.name}: ${it.owned}`)
-    .join(", ");
+  const ownedStr = availableItems.map((it) => `${it.name}: ${it.owned}`).join(
+    ", ",
+  );
   ownedDiv.textContent = `Owned — ${ownedStr}`;
 }
 
