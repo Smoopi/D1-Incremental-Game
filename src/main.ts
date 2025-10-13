@@ -16,8 +16,18 @@ document.body.innerHTML = `
 
 let cars: number = 0;
 let growthPerSecond: number = 0;
-const UPGRADE_COST = 10;
-let upgradesOwned = 0;
+
+const COST_A = 10;
+const COST_B = 100;
+const COST_C = 1000;
+
+const RATE_A = 0.1;
+const RATE_B = 2.0;
+const RATE_C = 50.0;
+
+let upgradesOwnedA = 0;
+let upgradesOwnedB = 0;
+let upgradesOwnedC = 0;
 
 const counterDiv = document.createElement("div");
 counterDiv.id = "counter";
@@ -30,6 +40,10 @@ function carLabel(n: number): string {
 }
 
 function formatCars(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
+
+function formatRate(n: number): string {
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
 
@@ -54,7 +68,10 @@ carImg.style.display = "block";
 carImg.addEventListener("click", () => {
   cars += 1;
   renderCounter();
-  updatePurchaseButton();
+  updatePurchaseButtonA();
+  updatePurchaseButtonB();
+  updatePurchaseButtonC();
+  renderStatus();
 
   carImg.style.transform = "scale(0.9)";
   setTimeout(() => {
@@ -73,32 +90,135 @@ purchaseBtn.style.background = "#e6edf5";
 purchaseBtn.style.cursor = "pointer";
 purchaseBtn.disabled = true;
 
+const purchaseBtnB = document.createElement("button");
+purchaseBtnB.id = "upgrade-btn-b";
+purchaseBtnB.style.marginTop = "12px";
+purchaseBtnB.style.padding = "10px 16px";
+purchaseBtnB.style.fontSize = "1rem";
+purchaseBtnB.style.borderRadius = "8px";
+purchaseBtnB.style.border = "1px solid #9aa5b1";
+purchaseBtnB.style.background = "#e6edf5";
+purchaseBtnB.style.cursor = "pointer";
+purchaseBtnB.disabled = true;
+
+const purchaseBtnC = document.createElement("button");
+purchaseBtnC.id = "upgrade-btn-c";
+purchaseBtnC.style.marginTop = "12px";
+purchaseBtnC.style.padding = "10px 16px";
+purchaseBtnC.style.fontSize = "1rem";
+purchaseBtnC.style.borderRadius = "8px";
+purchaseBtnC.style.border = "1px solid #9aa5b1";
+purchaseBtnC.style.background = "#e6edf5";
+purchaseBtnC.style.cursor = "pointer";
+purchaseBtnC.disabled = true;
+
 function renderPurchaseLabel(): void {
-  purchaseBtn.textContent =
-    `Buy Pit Crew (+1 car/sec) — Cost: ${UPGRADE_COST} ${
-      carLabel(UPGRADE_COST)
-    } — Owned: ${upgradesOwned}`;
+  purchaseBtn.textContent = `Buy Pit Crew (+${formatRate(RATE_A)} ${
+    carLabel(2)
+  }/sec) — Cost: ${COST_A} ${carLabel(COST_A)} — Owned: ${upgradesOwnedA}`;
 }
 
-function updatePurchaseButton(): void {
-  purchaseBtn.disabled = cars < UPGRADE_COST;
+function updatePurchaseButtonA(): void {
+  purchaseBtn.disabled = cars < COST_A;
   purchaseBtn.style.opacity = purchaseBtn.disabled ? "0.6" : "1";
 }
 
+function renderPurchaseLabelB(): void {
+  purchaseBtnB.textContent = `Buy Mechanics (+${formatRate(RATE_B)} ${
+    carLabel(2)
+  }/sec) — Cost: ${COST_B} ${carLabel(COST_B)} — Owned: ${upgradesOwnedB}`;
+}
+
+function updatePurchaseButtonB(): void {
+  purchaseBtnB.disabled = cars < COST_B;
+  purchaseBtnB.style.opacity = purchaseBtnB.disabled ? "0.6" : "1";
+}
+
+function renderPurchaseLabelC(): void {
+  purchaseBtnC.textContent = `Buy Engineers (+${formatRate(RATE_C)} ${
+    carLabel(2)
+  }/sec) — Cost: ${COST_C} ${carLabel(COST_C)} — Owned: ${upgradesOwnedC}`;
+}
+
+function updatePurchaseButtonC(): void {
+  purchaseBtnC.disabled = cars < COST_C;
+  purchaseBtnC.style.opacity = purchaseBtnC.disabled ? "0.6" : "1";
+}
+
 renderPurchaseLabel();
-updatePurchaseButton();
+updatePurchaseButtonA();
 document.body.appendChild(purchaseBtn);
 
+renderPurchaseLabelB();
+updatePurchaseButtonB();
+document.body.appendChild(purchaseBtnB);
+
+renderPurchaseLabelC();
+updatePurchaseButtonC();
+document.body.appendChild(purchaseBtnC);
+
 purchaseBtn.addEventListener("click", () => {
-  if (cars < UPGRADE_COST) return;
-  cars -= UPGRADE_COST;
-  upgradesOwned += 1;
-  growthPerSecond += 1;
+  if (cars < COST_A) return;
+  cars -= COST_A;
+  upgradesOwnedA += 1;
+  growthPerSecond += RATE_A;
 
   renderCounter();
   renderPurchaseLabel();
-  updatePurchaseButton();
+  updatePurchaseButtonA();
+  renderStatus();
 });
+
+purchaseBtnB.addEventListener("click", () => {
+  if (cars < COST_B) return;
+  cars -= COST_B;
+  upgradesOwnedB += 1;
+  growthPerSecond += RATE_B;
+
+  renderCounter();
+  renderPurchaseLabelB();
+  updatePurchaseButtonB();
+  renderStatus();
+});
+
+purchaseBtnC.addEventListener("click", () => {
+  if (cars < COST_C) return;
+  cars -= COST_C;
+  upgradesOwnedC += 1;
+  growthPerSecond += RATE_C;
+
+  renderCounter();
+  renderPurchaseLabelC();
+  updatePurchaseButtonC();
+  renderStatus();
+});
+
+const statusDiv = document.createElement("div");
+statusDiv.id = "status";
+statusDiv.style.marginTop = "16px";
+statusDiv.style.fontSize = "1rem";
+statusDiv.style.color = "#334e68";
+statusDiv.style.textAlign = "center";
+document.body.appendChild(statusDiv);
+
+const growthDiv = document.createElement("div");
+growthDiv.id = "growth";
+growthDiv.style.marginBottom = "6px";
+statusDiv.appendChild(growthDiv);
+
+const ownedDiv = document.createElement("div");
+ownedDiv.id = "owned";
+statusDiv.appendChild(ownedDiv);
+
+function renderStatus(): void {
+  growthDiv.textContent = `Growth: ${formatRate(growthPerSecond)} ${
+    carLabel(2)
+  }/sec`;
+  ownedDiv.textContent =
+    `Owned — Pit Crew: ${upgradesOwnedA}, Mechanics: ${upgradesOwnedB}, Engineers: ${upgradesOwnedC}`;
+}
+
+renderStatus();
 
 let lastTime: number | null = null;
 
@@ -110,7 +230,10 @@ function loop(now: number) {
     if (growthPerSecond > 0) {
       cars += growthPerSecond * deltaSec;
       renderCounter();
-      updatePurchaseButton();
+      updatePurchaseButtonA();
+      updatePurchaseButtonB();
+      updatePurchaseButtonC();
+      renderStatus();
     }
     lastTime = now;
   }
