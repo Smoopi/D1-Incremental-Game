@@ -17,13 +17,16 @@ document.body.innerHTML = `
 let cars: number = 0;
 let growthPerSecond: number = 0;
 
-const COST_A = 10;
-const COST_B = 100;
-const COST_C = 1000;
+// --- Step 7: costs now dynamic ---
+let costA: number = 10;
+let costB: number = 100;
+let costC: number = 1000;
 
 const RATE_A = 0.1;
 const RATE_B = 2.0;
 const RATE_C = 50.0;
+
+const PRICE_MULTIPLIER = 1.15;
 
 let upgradesOwnedA = 0;
 let upgradesOwnedB = 0;
@@ -45,6 +48,10 @@ function formatCars(n: number): string {
 
 function formatRate(n: number): string {
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
+
+function formatCost(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(2);
 }
 
 function renderCounter(): void {
@@ -113,35 +120,32 @@ purchaseBtnC.style.cursor = "pointer";
 purchaseBtnC.disabled = true;
 
 function renderPurchaseLabel(): void {
-  purchaseBtn.textContent = `Buy Pit Crew (+${formatRate(RATE_A)} ${
-    carLabel(2)
-  }/sec) — Cost: ${COST_A} ${carLabel(COST_A)} — Owned: ${upgradesOwnedA}`;
+  purchaseBtn.textContent =
+    `Buy Pit Crew (+${formatRate(RATE_A)} ${carLabel(2)}/sec) — Cost: ${formatCost(costA)} ${carLabel(costA)} — Owned: ${upgradesOwnedA}`;
 }
 
 function updatePurchaseButtonA(): void {
-  purchaseBtn.disabled = cars < COST_A;
+  purchaseBtn.disabled = cars < costA;
   purchaseBtn.style.opacity = purchaseBtn.disabled ? "0.6" : "1";
 }
 
 function renderPurchaseLabelB(): void {
-  purchaseBtnB.textContent = `Buy Mechanics (+${formatRate(RATE_B)} ${
-    carLabel(2)
-  }/sec) — Cost: ${COST_B} ${carLabel(COST_B)} — Owned: ${upgradesOwnedB}`;
+  purchaseBtnB.textContent =
+    `Buy Mechanics (+${formatRate(RATE_B)} ${carLabel(2)}/sec) — Cost: ${formatCost(costB)} ${carLabel(costB)} — Owned: ${upgradesOwnedB}`;
 }
 
 function updatePurchaseButtonB(): void {
-  purchaseBtnB.disabled = cars < COST_B;
+  purchaseBtnB.disabled = cars < costB;
   purchaseBtnB.style.opacity = purchaseBtnB.disabled ? "0.6" : "1";
 }
 
 function renderPurchaseLabelC(): void {
-  purchaseBtnC.textContent = `Buy Engineers (+${formatRate(RATE_C)} ${
-    carLabel(2)
-  }/sec) — Cost: ${COST_C} ${carLabel(COST_C)} — Owned: ${upgradesOwnedC}`;
+  purchaseBtnC.textContent =
+    `Buy Engineers (+${formatRate(RATE_C)} ${carLabel(2)}/sec) — Cost: ${formatCost(costC)} ${carLabel(costC)} — Owned: ${upgradesOwnedC}`;
 }
 
 function updatePurchaseButtonC(): void {
-  purchaseBtnC.disabled = cars < COST_C;
+  purchaseBtnC.disabled = cars < costC;
   purchaseBtnC.style.opacity = purchaseBtnC.disabled ? "0.6" : "1";
 }
 
@@ -158,10 +162,13 @@ updatePurchaseButtonC();
 document.body.appendChild(purchaseBtnC);
 
 purchaseBtn.addEventListener("click", () => {
-  if (cars < COST_A) return;
-  cars -= COST_A;
+  if (cars < costA) return;
+  cars -= costA;
   upgradesOwnedA += 1;
   growthPerSecond += RATE_A;
+
+  // Step 7: increase cost by 15%
+  costA *= PRICE_MULTIPLIER;
 
   renderCounter();
   renderPurchaseLabel();
@@ -170,10 +177,12 @@ purchaseBtn.addEventListener("click", () => {
 });
 
 purchaseBtnB.addEventListener("click", () => {
-  if (cars < COST_B) return;
-  cars -= COST_B;
+  if (cars < costB) return;
+  cars -= costB;
   upgradesOwnedB += 1;
   growthPerSecond += RATE_B;
+
+  costB *= PRICE_MULTIPLIER;
 
   renderCounter();
   renderPurchaseLabelB();
@@ -182,10 +191,12 @@ purchaseBtnB.addEventListener("click", () => {
 });
 
 purchaseBtnC.addEventListener("click", () => {
-  if (cars < COST_C) return;
-  cars -= COST_C;
+  if (cars < costC) return;
+  cars -= costC;
   upgradesOwnedC += 1;
   growthPerSecond += RATE_C;
+
+  costC *= PRICE_MULTIPLIER;
 
   renderCounter();
   renderPurchaseLabelC();
@@ -211,11 +222,8 @@ ownedDiv.id = "owned";
 statusDiv.appendChild(ownedDiv);
 
 function renderStatus(): void {
-  growthDiv.textContent = `Growth: ${formatRate(growthPerSecond)} ${
-    carLabel(2)
-  }/sec`;
-  ownedDiv.textContent =
-    `Owned — Pit Crew: ${upgradesOwnedA}, Mechanics: ${upgradesOwnedB}, Engineers: ${upgradesOwnedC}`;
+  growthDiv.textContent = `Growth: ${formatRate(growthPerSecond)} ${carLabel(2)}/sec`;
+  ownedDiv.textContent = `Owned — Pit Crew: ${upgradesOwnedA}, Mechanics: ${upgradesOwnedB}, Engineers: ${upgradesOwnedC}`;
 }
 
 renderStatus();
@@ -227,14 +235,17 @@ function loop(now: number) {
     lastTime = now;
   } else {
     const deltaSec = (now - lastTime) / 1000;
+
     if (growthPerSecond > 0) {
       cars += growthPerSecond * deltaSec;
-      renderCounter();
-      updatePurchaseButtonA();
-      updatePurchaseButtonB();
-      updatePurchaseButtonC();
-      renderStatus();
     }
+
+    renderCounter();
+    updatePurchaseButtonA();
+    updatePurchaseButtonB();
+    updatePurchaseButtonC();
+    renderStatus();
+
     lastTime = now;
   }
   requestAnimationFrame(loop);
