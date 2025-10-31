@@ -1,3 +1,12 @@
+interface UpgradeItem {
+  name: string;
+  description: string;
+  cost: number;
+  rate: number;
+  owned: number;
+  button?: HTMLButtonElement;
+}
+
 import exampleIconUrl from "./77-779651_bunch-of-cars-png-transparent-png.png";
 import "./style.css";
 
@@ -17,15 +26,6 @@ document.body.innerHTML = `
 let horsepower: number = 0;
 
 const PRICE_MULTIPLIER = 1.15;
-
-interface UpgradeItem {
-  name: string;
-  description: string;
-  cost: number;
-  rate: number;
-  owned: number;
-  button?: HTMLButtonElement;
-}
 
 const availableItems: UpgradeItem[] = [
   {
