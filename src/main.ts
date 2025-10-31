@@ -1,3 +1,6 @@
+// ====================
+// TYPES
+// ====================
 interface UpgradeItem {
   name: string;
   description: string;
@@ -7,26 +10,21 @@ interface UpgradeItem {
   button?: HTMLButtonElement;
 }
 
+// ====================
+//   IMPORTS
+//   ====================
 import exampleIconUrl from "./77-779651_bunch-of-cars-png-transparent-png.png";
 import "./style.css";
 
-document.body.style.display = "flex";
-document.body.style.flexDirection = "column";
-document.body.style.alignItems = "center";
-document.body.style.justifyContent = "center";
-document.body.style.height = "100vh";
-document.body.style.margin = "0";
-document.body.style.fontFamily = "sans-serif";
-document.body.style.backgroundColor = "#f4f5f7";
-
-document.body.innerHTML = `
-  <img src="${exampleIconUrl}" class="icon" id="engine" alt="Engine Icon" />
-`;
-
+// ====================
+// GAME STATE & CONSTANTS
+// ====================
 let horsepower: number = 0;
-
 const PRICE_MULTIPLIER = 1.15;
 
+// ====================
+// DATA: AVAILABLE UPGRADES
+// ====================
 const availableItems: UpgradeItem[] = [
   {
     name: "Pit Crew",
@@ -65,6 +63,9 @@ const availableItems: UpgradeItem[] = [
   },
 ];
 
+// ====================
+// NUMBER FORMATTERS
+// ====================
 function formatHP(value: number): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
@@ -75,73 +76,34 @@ function formatCost(value: number): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(2);
 }
 
+// ====================
+// UI CONSTRUCTION
+// ====================
+document.body.style.display = "flex";
+document.body.style.flexDirection = "column";
+document.body.style.alignItems = "center";
+document.body.style.justifyContent = "center";
+document.body.style.height = "100vh";
+document.body.style.margin = "0";
+document.body.style.fontFamily = "sans-serif";
+document.body.style.backgroundColor = "#f4f5f7";
+
+document.body.innerHTML = `
+  <img src="${exampleIconUrl}" class="icon" id="engine" alt="Engine Icon" />
+`;
+
 const counterDiv = document.createElement("div");
 counterDiv.id = "counter";
 counterDiv.style.fontSize = "2rem";
 counterDiv.style.marginBottom = "20px";
 counterDiv.style.color = "#1f2d3d";
+document.body.prepend(counterDiv);
 
+// ====================
+// RENDER HELPERS
+// ====================
 function renderCounter(): void {
   counterDiv.textContent = `${formatHP(horsepower)} Horsepower`;
-}
-
-document.body.prepend(counterDiv);
-renderCounter();
-
-const engineImage = document.querySelector<HTMLImageElement>("#engine");
-if (!engineImage) throw new Error("Engine image not found");
-
-engineImage.style.width = "200px";
-engineImage.style.height = "200px";
-engineImage.style.cursor = "pointer";
-engineImage.style.transition = "transform 0.1s ease";
-engineImage.style.border = "none";
-engineImage.style.outline = "none";
-engineImage.style.display = "block";
-
-engineImage.addEventListener("click", () => {
-  horsepower += 1;
-  renderCounter();
-  renderAllButtons();
-  renderStatus();
-
-  engineImage.style.transform = "scale(0.9)";
-  setTimeout(() => {
-    engineImage.style.transform = "";
-  }, 100);
-});
-
-function createPurchaseButton(): HTMLButtonElement {
-  const button = document.createElement("button");
-  button.style.marginTop = "12px";
-  button.style.padding = "10px 16px";
-  button.style.fontSize = "1rem";
-  button.style.borderRadius = "8px";
-  button.style.border = "1px solid #9aa5b1";
-  button.style.background = "#e6edf5";
-  button.style.cursor = "pointer";
-  button.disabled = true;
-  return button;
-}
-
-for (let index = 0; index < availableItems.length; index++) {
-  const item = availableItems[index];
-  const button = createPurchaseButton();
-  if (index === 0) button.style.marginTop = "24px";
-  item.button = button;
-  button.title = item.description;
-  document.body.appendChild(button);
-
-  button.addEventListener("click", () => {
-    if (horsepower < item.cost) return;
-    horsepower -= item.cost;
-    item.owned += 1;
-    item.cost *= PRICE_MULTIPLIER;
-
-    renderCounter();
-    renderAllButtons();
-    renderStatus();
-  });
 }
 
 function renderButton(item: UpgradeItem): void {
@@ -160,6 +122,9 @@ function renderAllButtons(): void {
   for (const item of availableItems) renderButton(item);
 }
 
+// ====================
+// STATUS PANEL
+// ====================
 const statusDiv = document.createElement("div");
 statusDiv.id = "status";
 statusDiv.style.marginTop = "16px";
@@ -197,9 +162,45 @@ function renderStatus(): void {
   ownedDiv.textContent = `Owned — ${ownedSummary}`;
 }
 
-renderAllButtons();
-renderStatus();
+// ====================
+// PURCHASE BUTTONS
+// ====================
+function createPurchaseButton(): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.style.marginTop = "12px";
+  button.style.padding = "10px 16px";
+  button.style.fontSize = "1rem";
+  button.style.borderRadius = "8px";
+  button.style.border = "1px solid #9aa5b1";
+  button.style.background = "#e6edf5";
+  button.style.cursor = "pointer";
+  button.disabled = true;
+  return button;
+}
 
+for (let index = 0; index < availableItems.length; index++) {
+  const item = availableItems[index];
+  const button = createPurchaseButton();
+  if (index === 0) button.style.marginTop = "24px";
+  item.button = button;
+  button.title = item.description;
+  document.body.appendChild(button);
+
+  button.addEventListener("click", () => {
+    if (horsepower < item.cost) return;
+    horsepower -= item.cost;
+    item.owned += 1;
+    item.cost *= PRICE_MULTIPLIER;
+
+    renderCounter();
+    renderAllButtons();
+    renderStatus();
+  });
+}
+
+// ====================
+// GAME LOOP
+// ====================
 let lastTimestampMs: number | null = null;
 
 function gameLoop(timestampMs: number): void {
@@ -222,4 +223,33 @@ function gameLoop(timestampMs: number): void {
   requestAnimationFrame(gameLoop);
 }
 
+// ====================
+// EVENTS & STARTUP
+// ====================
+const engineImage = document.querySelector<HTMLImageElement>("#engine");
+if (!engineImage) throw new Error("Engine image not found");
+
+engineImage.style.width = "200px";
+engineImage.style.height = "200px";
+engineImage.style.cursor = "pointer";
+engineImage.style.transition = "transform 0.1s ease";
+engineImage.style.border = "none";
+engineImage.style.outline = "none";
+engineImage.style.display = "block";
+
+engineImage.addEventListener("click", () => {
+  horsepower += 1;
+  renderCounter();
+  renderAllButtons();
+  renderStatus();
+
+  engineImage.style.transform = "scale(0.9)";
+  setTimeout(() => {
+    engineImage.style.transform = "";
+  }, 100);
+});
+
+renderCounter();
+renderAllButtons();
+renderStatus();
 requestAnimationFrame(gameLoop);
