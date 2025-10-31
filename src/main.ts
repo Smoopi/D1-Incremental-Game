@@ -18,7 +18,7 @@ let horsepower: number = 0;
 
 const PRICE_MULTIPLIER = 1.15;
 
-interface Item {
+interface UpgradeItem {
   name: string;
   description: string;
   cost: number;
@@ -27,7 +27,7 @@ interface Item {
   button?: HTMLButtonElement;
 }
 
-const availableItems: Item[] = [
+const availableItems: UpgradeItem[] = [
   {
     name: "Pit Crew",
     description: "Quicker tire swaps and refuels — find free hp in the pits.",
@@ -65,14 +65,14 @@ const availableItems: Item[] = [
   },
 ];
 
-function formatHP(n: number): string {
-  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+function formatHP(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
-function formatRate(n: number): string {
-  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+function formatRate(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
-function formatCost(n: number): string {
-  return Number.isInteger(n) ? String(n) : n.toFixed(2);
+function formatCost(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2);
 }
 
 const counterDiv = document.createElement("div");
@@ -88,49 +88,51 @@ function renderCounter(): void {
 document.body.prepend(counterDiv);
 renderCounter();
 
-const engineImg = document.querySelector<HTMLImageElement>("#engine");
-if (!engineImg) throw new Error("Engine image not found");
+const engineImage = document.querySelector<HTMLImageElement>("#engine");
+if (!engineImage) throw new Error("Engine image not found");
 
-engineImg.style.width = "200px";
-engineImg.style.height = "200px";
-engineImg.style.cursor = "pointer";
-engineImg.style.transition = "transform 0.1s ease";
-engineImg.style.border = "none";
-engineImg.style.outline = "none";
-engineImg.style.display = "block";
+engineImage.style.width = "200px";
+engineImage.style.height = "200px";
+engineImage.style.cursor = "pointer";
+engineImage.style.transition = "transform 0.1s ease";
+engineImage.style.border = "none";
+engineImage.style.outline = "none";
+engineImage.style.display = "block";
 
-engineImg.addEventListener("click", () => {
+engineImage.addEventListener("click", () => {
   horsepower += 1;
   renderCounter();
   renderAllButtons();
   renderStatus();
 
-  engineImg.style.transform = "scale(0.9)";
-  setTimeout(() => (engineImg.style.transform = ""), 100);
+  engineImage.style.transform = "scale(0.9)";
+  setTimeout(() => {
+    engineImage.style.transform = "";
+  }, 100);
 });
 
-function makeButton(): HTMLButtonElement {
-  const btn = document.createElement("button");
-  btn.style.marginTop = "12px";
-  btn.style.padding = "10px 16px";
-  btn.style.fontSize = "1rem";
-  btn.style.borderRadius = "8px";
-  btn.style.border = "1px solid #9aa5b1";
-  btn.style.background = "#e6edf5";
-  btn.style.cursor = "pointer";
-  btn.disabled = true;
-  return btn;
+function createPurchaseButton(): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.style.marginTop = "12px";
+  button.style.padding = "10px 16px";
+  button.style.fontSize = "1rem";
+  button.style.borderRadius = "8px";
+  button.style.border = "1px solid #9aa5b1";
+  button.style.background = "#e6edf5";
+  button.style.cursor = "pointer";
+  button.disabled = true;
+  return button;
 }
 
-for (let i = 0; i < availableItems.length; i++) {
-  const item = availableItems[i];
-  const btn = makeButton();
-  if (i === 0) btn.style.marginTop = "24px";
-  item.button = btn;
-  btn.title = item.description;
-  document.body.appendChild(btn);
+for (let index = 0; index < availableItems.length; index++) {
+  const item = availableItems[index];
+  const button = createPurchaseButton();
+  if (index === 0) button.style.marginTop = "24px";
+  item.button = button;
+  button.title = item.description;
+  document.body.appendChild(button);
 
-  btn.addEventListener("click", () => {
+  button.addEventListener("click", () => {
     if (horsepower < item.cost) return;
     horsepower -= item.cost;
     item.owned += 1;
@@ -142,10 +144,12 @@ for (let i = 0; i < availableItems.length; i++) {
   });
 }
 
-function renderButton(item: Item): void {
+function renderButton(item: UpgradeItem): void {
   if (!item.button) return;
   item.button.textContent = `Hire ${item.name} (+${
-    formatRate(item.rate)
+    formatRate(
+      item.rate,
+    )
   } hp/sec) — Cost: ${formatCost(item.cost)} hp — Owned: ${item.owned}`;
   const canAfford = horsepower >= item.cost;
   item.button.disabled = !canAfford;
@@ -164,52 +168,58 @@ statusDiv.style.color = "#334e68";
 statusDiv.style.textAlign = "center";
 document.body.appendChild(statusDiv);
 
-const growthDiv = document.createElement("div");
-growthDiv.id = "growth";
-growthDiv.style.marginBottom = "6px";
-statusDiv.appendChild(growthDiv);
+const outputRateDiv = document.createElement("div");
+outputRateDiv.id = "growth";
+outputRateDiv.style.marginBottom = "6px";
+statusDiv.appendChild(outputRateDiv);
 
 const ownedDiv = document.createElement("div");
 ownedDiv.id = "owned";
 statusDiv.appendChild(ownedDiv);
 
-function totalGrowthPerSecond(): number {
-  return availableItems.reduce((sum, it) => sum + it.rate * it.owned, 0);
+function calculateHorsepowerPerSecond(): number {
+  return availableItems.reduce(
+    (sum: number, upgradeItem: UpgradeItem) =>
+      sum + upgradeItem.rate * upgradeItem.owned,
+    0,
+  );
 }
 
 function renderStatus(): void {
-  const gps = totalGrowthPerSecond();
-  growthDiv.textContent = `Output: ${formatRate(gps)} hp/sec`;
+  const horsepowerPerSecond = calculateHorsepowerPerSecond();
+  outputRateDiv.textContent = `Output: ${
+    formatRate(horsepowerPerSecond)
+  } hp/sec`;
 
-  const ownedStr = availableItems.map((it) => `${it.name}: ${it.owned}`).join(
-    ", ",
-  );
-  ownedDiv.textContent = `Owned — ${ownedStr}`;
+  const ownedSummary = availableItems
+    .map((upgradeItem) => `${upgradeItem.name}: ${upgradeItem.owned}`)
+    .join(", ");
+  ownedDiv.textContent = `Owned — ${ownedSummary}`;
 }
 
 renderAllButtons();
 renderStatus();
 
-let lastTime: number | null = null;
+let lastTimestampMs: number | null = null;
 
-function loop(now: number) {
-  if (lastTime === null) {
-    lastTime = now;
+function gameLoop(timestampMs: number): void {
+  if (lastTimestampMs === null) {
+    lastTimestampMs = timestampMs;
   } else {
-    const deltaSec = (now - lastTime) / 1000;
+    const deltaSeconds = (timestampMs - lastTimestampMs) / 1000;
 
-    const gps = totalGrowthPerSecond();
-    if (gps > 0) {
-      horsepower += gps * deltaSec;
+    const horsepowerPerSecond = calculateHorsepowerPerSecond();
+    if (horsepowerPerSecond > 0) {
+      horsepower += horsepowerPerSecond * deltaSeconds;
     }
 
     renderCounter();
     renderAllButtons();
     renderStatus();
 
-    lastTime = now;
+    lastTimestampMs = timestampMs;
   }
-  requestAnimationFrame(loop);
+  requestAnimationFrame(gameLoop);
 }
 
-requestAnimationFrame(loop);
+requestAnimationFrame(gameLoop);
